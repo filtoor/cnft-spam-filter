@@ -9,6 +9,5 @@ Currently running at https://jza4yd2wf2.execute-api.us-east-1.amazonaws.com/?ass
 Change assetId to whatever you want to see features being extracted.
 
 ## TODO:
-- Get a spam and ham set using tensor and solcinerator
-- Train a naive bayes classifier on the spam and ham set and save the weights
-- Classify using the trained classifier
+- better spam and ham set for default model
+- better examples
