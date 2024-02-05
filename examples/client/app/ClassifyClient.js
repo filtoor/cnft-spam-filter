@@ -15,11 +15,7 @@ export default function ClassifyClient() {
         process.env.NEXT_PUBLIC_RPC_URL
       );
 
-      const result = await classify([
-        "not_containsEmoji",
-        "not_proofLengthImpossible",
-        "not_imageContainsUrl",
-      ]);
+      const result = await classify(tokens);
 
       setClassification(result);
     } catch (e) {
