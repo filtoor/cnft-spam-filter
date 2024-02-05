@@ -1,0 +1,16 @@
+org: solarnius
+app: classify-serverless
+service: classify-serverless
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  classify:
+    handler: classify.handler
+    events:
+      - httpApi:
+          path: /
+          method: get
