@@ -1,5 +1,4 @@
 const { createWorker } = require("tesseract.js");
-require("dotenv").config();
 const {
   fetchMerkleTree,
   mplBubblegum,
