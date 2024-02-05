@@ -1,0 +1,29 @@
+{
+  "name": "cnft-spam-filter",
+  "version": "1.0.0",
+  "description": "a set of useful utils for determining if a cNFT on solana is spam or not",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/solarnius/cnft-spam-filter.git"
+  },
+  "keywords": [
+    "solana"
+  ],
+  "author": "@solarnius",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/solarnius/cnft-spam-filter/issues"
+  },
+  "homepage": "https://github.com/solarnius/cnft-spam-filter#readme",
+  "dependencies": {
+    "@metaplex-foundation/mpl-bubblegum": "^3.1.2",
+    "@metaplex-foundation/umi": "^0.8.10",
+    "@metaplex-foundation/umi-bundle-defaults": "^0.8.10",
+    "dotenv": "^16.4.1",
+    "tesseract.js": "^5.0.4"
+  }
+}
