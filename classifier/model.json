@@ -1,0 +1,44 @@
+{
+  "spam": {
+    "tokens": {
+      "contains_emoji": 2,
+      "proof_length_impossible": 4,
+      "image_contains_url": 3,
+      "airdrop": 3,
+      "remember": 2,
+      "to": 2,
+      "redeem": 2,
+      "it": 2,
+      "within": 2,
+      "the": 2,
+      "you've": 3,
+      "been": 3,
+      "awarded": 3,
+      "voucher": 3,
+      "exclusive": 3,
+      "claim": 3,
+      "link": 2,
+      "available": 2,
+      "here:": 2,
+      "jito": 2,
+      "this": 3,
+      "is": 3,
+      "pass": 2,
+      "not_contains_emoji": 3,
+      "not_image_contains_url": 2,
+      "not_proof_length_impossible": 1
+    },
+    "size": 5
+  },
+  "ham": {
+    "tokens": {
+      "contains_emoji": 1,
+      "proof_length_impossible": 0,
+      "image_contains_url": 0,
+      "not_contains_emoji": 4,
+      "not_proof_length_impossible": 5,
+      "not_image_contains_url": 5
+    },
+    "size": 5
+  }
+}

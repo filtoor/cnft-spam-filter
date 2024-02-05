@@ -10,6 +10,7 @@ provider:
 functions:
   classify:
     handler: classify.handler
+    timeout: 30
     events:
       - httpApi:
           path: /

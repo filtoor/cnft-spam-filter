@@ -76,20 +76,24 @@ module.exports.handler = async (event) => {
     await Promise.all([getTreeData(umi, tree_id), getImageData(image_url)]);
 
   // Get the words from the NFT metadata
-  const attribute_words = result.content.metadata.attributes.flatMap((attr) => [
-    ...attr.value.split(/\s+/),
-    ...attr.trait_type.split(/\s+/),
-  ]);
+  const attribute_words = (result.content.metadata.attributes ?? []).flatMap(
+    (attr) => [...attr.value.split(/\s+/), ...attr.trait_type.split(/\s+/)]
+  );
   const description_words =
     result.content.metadata.description?.split(/\s+/) ?? "";
   const name_words = result.content.metadata.name?.split(/\s+/) ?? "";
 
-  const words = [
+  const all_words = [
     ...image_words,
     ...attribute_words,
     ...description_words,
     ...name_words,
-  ]
+  ];
+
+  const regex_emoji = /\p{Extended_Pictographic}/u;
+  const contains_emoji = all_words.some((word) => regex_emoji.test(word));
+
+  let tokens = image_words // only image words are useful for classification purposes
     .filter((word) => {
       if (word === "[]") return false;
       if (word.length <= 1) return false;
@@ -98,16 +102,31 @@ module.exports.handler = async (event) => {
     })
     .map((word) => word.toLowerCase());
 
-  const regex_emoji = /\p{Extended_Pictographic}/u;
-  const contains_emoji = words.some((word) => regex_emoji.test(word));
+  const keywords = [
+    "contains_emoji",
+    "proof_length_impossible",
+    "image_contains_url",
+    "not_contains_emoji",
+    "not_proof_length_impossible",
+    "not_image_contains_url",
+  ];
+
+  tokens.filter((token) => {
+    return !keywords.includes(token);
+  });
+
+  tokens.push(contains_emoji ? "contains_emoji" : "not_contains_emoji");
+  tokens.push(
+    proof_length_impossible
+      ? "proof_length_impossible"
+      : "not_proof_length_impossible"
+  );
+  tokens.push(
+    image_contains_url ? "image_contains_url" : "not_image_contains_url"
+  );
 
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      words,
-      contains_emoji,
-      proof_length_impossible,
-      image_contains_url,
-    }),
+    body: JSON.stringify(tokens),
   };
 };
