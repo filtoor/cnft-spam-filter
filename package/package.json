@@ -1,6 +1,6 @@
 {
   "name": "cnft-spam-filter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a set of useful utils for determining if a cNFT on solana is spam or not",
   "main": "index.js",
   "scripts": {
