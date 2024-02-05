@@ -8,19 +8,11 @@ const ham_ids = require("./ham_ids.json");
 
 let model = {
   spam: {
-    tokens: {
-      contains_emoji: 0,
-      proof_length_impossible: 0,
-      image_contains_url: 0,
-    },
+    tokens: {},
     size: 0,
   },
   ham: {
-    tokens: {
-      contains_emoji: 0,
-      proof_length_impossible: 0,
-      image_contains_url: 0,
-    },
+    tokens: {},
     size: 0,
   },
 };
