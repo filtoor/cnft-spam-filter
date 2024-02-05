@@ -2,7 +2,9 @@
 
 An open-source, lightweight, and portable spam classifier for cNFTs on Solana. 
 
-Can run anywhere that webassembly runs: on a server, on a lambda function, and *even running entirely in your browser*.
+Can run anywhere that webassembly runs: on a server, in a lambda function, and *even running entirely in your browser*:
+
+https://github.com/solarnius/cnft-spam-filter/assets/157436846/3bd2788e-84e1-41b7-8600-a297a99696f3
 
 Also included is the model training code and data, so you can train and bring your own model if the default model is not performing well.
 
