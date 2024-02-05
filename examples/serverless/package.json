@@ -11,5 +11,8 @@
   "dependencies": {
     "cnft-spam-filter": "^1.0.0",
     "dotenv": "^16.4.1"
+  },
+  "devDependencies": {
+    "serverless-api-gateway-throttling": "^2.0.3"
   }
 }

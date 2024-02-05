@@ -7,6 +7,15 @@ provider:
   name: aws
   runtime: nodejs18.x
 
+	
+plugins:
+  - serverless-api-gateway-throttling
+ 
+custom:
+  apiGatewayThrottling:
+    maxRequestsPerSecond: 1
+    maxConcurrentRequests: 100
+
 functions:
   classify:
     handler: classify.handler

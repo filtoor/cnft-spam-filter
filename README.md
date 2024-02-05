@@ -8,6 +8,17 @@ Also included is the model training code and data, so you can train and bring yo
 
 Feature extraction is done with a combination of on-chain data and OCR using the [tesseract.js library](https://github.com/naptha/tesseract.js). Classification is done with naive bayes and a hand-picked set of `spam` and `ham` cNFTs.
 
+
+## Live Example
+
+You can try a live (slow + heavily rate limited) example of the library running on AWS Lambda here: 
+
+[https://jza4yd2wf2.execute-api.us-east-1.amazonaws.com/?assetId=A1xhLVywcq6SeZnmRG1pUzoSWxVMpS6J5ShEbt3smQJr](https://jza4yd2wf2.execute-api.us-east-1.amazonaws.com/?assetId=A1xhLVywcq6SeZnmRG1pUzoSWxVMpS6J5ShEbt3smQJr)
+
+Try a new cNFT by replacing the `assetId={...}` parameter. The classifier will either spit out "spam" or "ham" (or "error" if something went wrong).
+
+Lambda is by far the slowest execution environment due to cold start and OCR taking ~10s/cNFT compared to sub 1s/cNFT on servers/clientside, but this should give you a playground for testing the library.
+
 ## Installation
 
 First, install the library:
@@ -39,7 +50,7 @@ You can find a few lightweight examples of how to use the library in different e
 
 ## Training
 
-You can train your own model and pass it to `classify(tokens, model)`. Code for this is in the [/train folder]([/examples folder](https://github.com/solarnius/cnft-spam-filter/tree/main/train)).
+You can train your own model and pass it to `classify(tokens, model)`. Code for this is in the [/train folder](https://github.com/solarnius/cnft-spam-filter/tree/main/train).
 
 You'll see `spam_ids.json` and `ham_ids.json` there; these are the cNFTs used to train the model.
 
