@@ -8,10 +8,8 @@
   },
   "author": "solarnius",
   "license": "ISC",
-  "devDependencies": {
-    "@google-cloud/functions-framework": "^3.3.0"
-  },
   "dependencies": {
+    "@google-cloud/functions-framework": "^3.0.0",
     "@metaplex-foundation/mpl-bubblegum": "^3.1.2",
     "@metaplex-foundation/umi": "^0.8.10",
     "@metaplex-foundation/umi-bundle-defaults": "^0.8.10",

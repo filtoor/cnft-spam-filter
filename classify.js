@@ -45,7 +45,10 @@ functions.http("classify", async (req, res) => {
 
     // Get the text contents of the image using OCR
     const image_url = result.content.links.image;
-    const worker = await createWorker("eng");
+    const worker = await createWorker("eng", 1, {
+      cachePath: "/tmp",
+      langPath: "/tmp",
+    });
     const ret = await worker.recognize(image_url);
     const image_words = ret.data.text.split(/\s+/);
     const image_contains_url = image_words.some((word) =>
