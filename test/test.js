@@ -4,6 +4,8 @@ const ham_ids = require("./ham_ids.json");
 const spam_ids = require("./spam_ids.json");
 const model = require("./model.json");
 
+let times = [];
+
 function printAccuracy(accuracy, mistakes) {
   const true_spam = accuracy.spam.true;
   const false_spam = accuracy.spam.false;
@@ -21,8 +23,13 @@ function printAccuracy(accuracy, mistakes) {
     },
   };
 
+  const avg_time = times.reduce((a, b) => a + b, 0) / times.length;
+  const median_time = times.sort((a, b) => a - b)[Math.floor(times.length / 2)];
+
   console.clear();
   console.table(confusion_matrix);
+  console.log(`avg time: ${avg_time}ms`);
+  console.log(`median time: ${median_time}ms`);
   console.log(mistakes);
 }
 
@@ -43,8 +50,11 @@ async function test() {
 
   for (let id of ham_ids) {
     try {
+      const startTime = new Date().getTime();
       let tokens = await extractTokens(id, process.env.RPC_URL);
       let result = await classify(tokens, model);
+      const endTime = new Date().getTime();
+      times.push(endTime - startTime);
 
       if (result === "ham") {
         accuracy.ham.true++;
@@ -60,8 +70,11 @@ async function test() {
 
   for (let id of spam_ids) {
     try {
+      const startTime = new Date().getTime();
       let tokens = await extractTokens(id, process.env.RPC_URL);
       let result = await classify(tokens, model);
+      const endTime = new Date().getTime();
+      times.push(endTime - startTime);
 
       if (result === "spam") {
         accuracy.spam.true++;
