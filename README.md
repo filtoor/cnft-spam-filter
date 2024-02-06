@@ -56,6 +56,10 @@ You can train your own model and pass it to `classify(tokens, model)`. Code for 
 
 You'll see `spam_ids.json` and `ham_ids.json` there; these are the cNFTs used to train the model.
 
+## Testing
+
+You can test the accuracy of a model using the code in the [/test folder](https://github.com/solarnius/cnft-spam-filter/tree/main/train). Make sure that your training set and test set do not overlap.
+
 ## Usage in Production
 
 If you want to use `cnft-spam-filter` in production, we recommend setting up a caching layer so that you don't have to analyze each cNFT multiple times. This should be done at your own app level: you can use redis, a database, localstorage--whatever you want.

@@ -2,7 +2,7 @@
 
 An open-source, lightweight, and portable spam classifier for cNFTs on Solana. 
 
-Can run anywhere that webassembly runs: on a server, on a lambda function, and *even running entirely in your browser*.
+Can run anywhere that webassembly runs: on a server, in a lambda function, and *even running entirely in your browser*.
 
 Also included is the model training code and data, so you can train and bring your own model if the default model is not performing well.
 
@@ -53,6 +53,10 @@ You can find a few lightweight examples of how to use the library in different e
 You can train your own model and pass it to `classify(tokens, model)`. Code for this is in the [/train folder](https://github.com/solarnius/cnft-spam-filter/tree/main/train).
 
 You'll see `spam_ids.json` and `ham_ids.json` there; these are the cNFTs used to train the model.
+
+## Testing
+
+You can test the accuracy of a model using the code in the [/test folder](https://github.com/solarnius/cnft-spam-filter/tree/main/train). Make sure that your training set and test set do not overlap.
 
 ## Usage in Production
 
