@@ -1,6 +1,6 @@
 # cnft-spam-filter
 
-An open-source, lightweight, and portable spam classifier for cNFTs on Solana. 
+An open-source, lightweight, and portable spam classifier for cNFTs on Solana with 96% accuracy.
 
 Can run anywhere that webassembly runs: on a server, in a lambda function, and *even running entirely in your browser*:
 
@@ -58,11 +58,15 @@ You'll see `spam_ids.json` and `ham_ids.json` there; these are the cNFTs used to
 
 ## Testing
 
-You can test the accuracy of a model using the code in the [/test folder](https://github.com/solarnius/cnft-spam-filter/tree/main/train). Make sure that your training set and test set do not overlap.
+You can test the accuracy of a model using the code in the [/test folder](https://github.com/solarnius/cnft-spam-filter/tree/main/train). Make sure that your training set and test set do not overlap. It should spit out a confusion matrix as well as all of the mistakes made:
+
+
+<img width="436" alt="10" src="https://github.com/solarnius/cnft-spam-filter/assets/157436846/edade4d2-4d70-4768-a5a0-631bda8cd9fa">
+
 
 ## Usage in Production
 
-If you want to use `cnft-spam-filter` in production, we recommend setting up a caching layer so that you don't have to analyze each cNFT multiple times. This should be done at your own app level: you can use redis, a database, localstorage--whatever you want.
+If you want to use `cnft-spam-filter` in production, I recommend setting up a caching layer so that you don't have to analyze each cNFT multiple times. This should be done at your own app level: you can use redis, a database, localstorage--whatever you want.
 
 ## Contributing
 
