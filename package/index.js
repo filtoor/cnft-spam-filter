@@ -78,20 +78,15 @@ async function extractTokens(assetId, rpcUrl) {
     result.content.metadata.description?.split(/\s+/) ?? "";
   const nameWords = result.content.metadata.name?.split(/\s+/) ?? "";
 
-  const allWords = [
-    ...imageWords,
-    ...attributeWords,
-    ...descriptionWords,
-    ...nameWords,
-  ];
-
+  // Check attribute/description/name for an emoji
+  const allWords = [...attributeWords, ...descriptionWords, ...nameWords];
   const regexEmoji = /\p{Extended_Pictographic}/u;
   const containsEmoji = allWords.some((word) => regexEmoji.test(word));
 
-  let tokens = imageWords // only image words are useful for classification purposes
+  let tokens = [...imageWords, ...attributeWords] // only image and attribute words are useful for classification purposes
     .filter((word) => {
       if (word === "[]") return false;
-      if (word.length <= 1) return false;
+      if (word.length <= 3) return false; // ignore words with less than 3 characters, kinda hacky but useful
 
       return true;
     })
