@@ -17,6 +17,8 @@ export default function ClassifyClient() {
 
       const result = await classify(tokens);
 
+      console.log(`Classified as: ${result}`);
+
       setClassification(result);
     } catch (e) {
       setClassification("error");

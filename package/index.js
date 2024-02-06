@@ -6,24 +6,20 @@ const {
 const { createUmi } = require("@metaplex-foundation/umi");
 const { defaultPlugins } = require("@metaplex-foundation/umi-bundle-defaults");
 const defaultModel = require("./model.json");
-console.log(defaultModel);
+let startTime;
 
 // Analyze tree to see if proof length makes burning impossible
 async function getTreeData(umi, treeId) {
-  console.log("getting image data");
-
   const tree = await fetchMerkleTree(umi, treeId);
   const proofLength =
     tree.treeHeader.maxDepth - (Math.log2(tree.canopy.length + 2) - 1);
   const proofLengthImpossible = proofLength > 23; // 23 is the maximum proof length for burning a cNFT
 
-  console.log({ proofLengthImpossible });
   return { proofLengthImpossible };
 }
 
 // Image OCR
 async function getImageData(imageUrl) {
-  console.log("getting image data");
   const worker = await createWorker("eng", 1, {
     cachePath: "/tmp",
   });
@@ -34,16 +30,14 @@ async function getImageData(imageUrl) {
   );
   worker.terminate();
 
-  console.log({ imageWords, imageContainsUrl });
   return { imageWords, imageContainsUrl };
 }
 
 async function extractTokens(assetId, rpcUrl) {
+  startTime = new Date().getTime();
   if (!assetId || !rpcUrl) {
     throw new Error("assetId and rpcUrl are required");
   }
-
-  console.log("EXTRACTING");
 
   const umi = createUmi().use(defaultPlugins(rpcUrl)).use(mplBubblegum());
 
@@ -124,13 +118,10 @@ async function extractTokens(assetId, rpcUrl) {
   );
   tokens.push(imageContainsUrl ? "imageContainsUrl" : "not_imageContainsUrl");
 
-  console.log("returning", tokens);
   return tokens;
 }
 
 function classify(tokens, model = defaultModel) {
-  console.log({ tokens, model });
-  console.log("CLASSIFYING", tokens);
   let spam_likelihood = model.spam.size / (model.spam.size + model.ham.size);
   let ham_likelihood = 1 - spam_likelihood;
   const unique_tokens = new Set(tokens);

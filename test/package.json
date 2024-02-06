@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "cnft-spam-filter": "^1.0.5",
+    "dotenv": "^16.4.1"
+  }
+}
