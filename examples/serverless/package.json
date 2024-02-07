@@ -9,10 +9,14 @@
   "author": "solarnius",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.507.0",
+    "@aws-sdk/lib-dynamodb": "^3.507.0",
     "cnft-spam-filter": "^1.0.0",
     "dotenv": "^16.4.1"
   },
   "devDependencies": {
-    "serverless-api-gateway-throttling": "^2.0.3"
+    "serverless-api-gateway-throttling": "^2.0.3",
+    "serverless-dynamodb-local": "^0.2.40",
+    "serverless-offline": "^13.3.3"
   }
 }

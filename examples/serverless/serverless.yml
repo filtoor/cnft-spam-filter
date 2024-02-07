@@ -6,15 +6,41 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${aws:region}:*:table/cnftTable"
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${aws:region}:*:table/treeTable"
+
 
 	
 plugins:
   - serverless-api-gateway-throttling
- 
+  - serverless-dynamodb-local
+  - serverless-offline
 custom:
   apiGatewayThrottling:
     maxRequestsPerSecond: 1
     maxConcurrentRequests: 100
+  dynamodb:
+    stages:
+      - dev
 
 functions:
   classify:
@@ -22,5 +48,33 @@ functions:
     timeout: 30
     events:
       - httpApi:
-          path: /
+          path: /classify
           method: get
+
+resources:
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: cnftTable
+        AttributeDefinitions:
+          - AttributeName: address
+            AttributeType: S
+        KeySchema:
+          - AttributeName: address
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    treeTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: treeTable
+        AttributeDefinitions:
+          - AttributeName: address
+            AttributeType: S
+        KeySchema:
+          - AttributeName: address
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    

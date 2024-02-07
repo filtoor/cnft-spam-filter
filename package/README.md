@@ -13,11 +13,11 @@ Feature extraction is done with a combination of on-chain data and OCR using the
 
 You can try a live (slow + heavily rate limited) example of the library running on AWS Lambda here: 
 
-[https://jza4yd2wf2.execute-api.us-east-1.amazonaws.com/?assetId=A1xhLVywcq6SeZnmRG1pUzoSWxVMpS6J5ShEbt3smQJr](https://jza4yd2wf2.execute-api.us-east-1.amazonaws.com/?assetId=A1xhLVywcq6SeZnmRG1pUzoSWxVMpS6J5ShEbt3smQJr)
+[https://api.filtoor.xyz/classify?address=A1xhLVywcq6SeZnmRG1pUzoSWxVMpS6J5ShEbt3smQJr](https://api.filtoor.xyz/classify?address=A1xhLVywcq6SeZnmRG1pUzoSWxVMpS6J5ShEbt3smQJr)
 
-Try a new cNFT by replacing the `assetId={...}` parameter. The classifier will either spit out "spam" or "ham" (or "error" if something went wrong).
+Try a new cNFT by replacing the `address={...}` parameter. The classifier will either spit out "spam" or "ham" (or "error" if something went wrong).
 
-Lambda is by far the slowest execution environment due to cold start and OCR taking ~10s/cNFT compared to sub 1s/cNFT on servers/clientside, but this should give you a playground for testing the library.
+If you'd like to use this API in your production project, please [DM me](https://twitter.com/solarnius) to get set up!
 
 ## Installation
 
@@ -25,19 +25,18 @@ First, install the library:
 
 `npm i cnft-spam-filter`
 
-then import the requisite functions:
+then import the requisite function:
 
-`const { extractTokens, classify } = require("cnft-spam-filter")`
+`const { extractAndClassify } = require("cnft-spam-filter")`
 
 or 
 
-`import { extractTokens, classify } from "cnft-spam-filter"`
+`import { extractAndClassify } from "cnft-spam-filter"`
 
-Finally, call the functions wherever you want to classify:
+Finally, call the function wherever you want to classify:
 
 ```js
-const tokens = await extractTokens(assetId, rpcUrl);
-const classification = classify(tokens);
+const classification = await extractAndClassify(assetId, rpcUrl);
 ```
 
 Note that you'll need to bring your own `rpcUrl` that supports the `DAS` api--I recommend Helius for their generous free plan https://www.helius.dev/.
@@ -70,6 +69,6 @@ Feel free to open pull requests to contribute if you think this is interesting! 
 
 All code is released under the [MIT license](https://opensource.org/license/mit/) -- go crazy.
 
-Solana/USDC donations are appreciated but not required by any means: 
+Solana asset donations are appreciated but not required by any means: 
 
-`solarnius.sol`
+`filtoor.sol`

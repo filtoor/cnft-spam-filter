@@ -6,19 +6,21 @@ const {
 const { createUmi } = require("@metaplex-foundation/umi");
 const { defaultPlugins } = require("@metaplex-foundation/umi-bundle-defaults");
 const defaultModel = require("./model.json");
-let startTime;
 
-// Analyze tree to see if proof length makes burning impossible
-async function getTreeData(umi, treeId) {
+// Analyze tree to get proof depth
+async function getProofLength(treeId, rpcUrl) {
+  const umi = createUmi().use(defaultPlugins(rpcUrl)).use(mplBubblegum());
+
   const tree = await fetchMerkleTree(umi, treeId);
   const proofLength =
     tree.treeHeader.maxDepth - (Math.log2(tree.canopy.length + 2) - 1);
-  const proofLengthImpossible = proofLength > 23; // 23 is the maximum proof length for burning a cNFT
 
-  return { proofLengthImpossible };
+  return { proofLength };
 }
 
 // Image OCR
+// very slow, not recommended for production
+// should roll your own OCR
 async function getImageData(imageUrl) {
   const worker = await createWorker("eng", 1, {
     cachePath: "/tmp",
@@ -33,50 +35,65 @@ async function getImageData(imageUrl) {
   return { imageWords, imageContainsUrl };
 }
 
-async function extractTokens(assetId, rpcUrl) {
-  startTime = new Date().getTime();
-  if (!assetId || !rpcUrl) {
-    throw new Error("assetId and rpcUrl are required");
+async function extractTokens(
+  address,
+  rpcUrl,
+  nftData = undefined,
+  proofLength = undefined
+) {
+  if (!address || !rpcUrl) {
+    throw new Error("address and rpcUrl are required");
   }
 
-  const umi = createUmi().use(defaultPlugins(rpcUrl)).use(mplBubblegum());
-
-  const response = await fetch(rpcUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: assetId,
-      method: "getAsset",
-      params: {
-        id: assetId,
-        displayOptions: {
-          showUnverifiedCollections: true,
-          showCollectionMetadata: true,
-          showFungible: false,
-          showInscription: false,
-        },
+  if (!nftData) {
+    const response = await fetch(rpcUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    }),
-  });
-  const { result } = await response.json();
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: address,
+        method: "getAsset",
+        params: {
+          id: address,
+          displayOptions: {
+            showUnverifiedCollections: true,
+            showCollectionMetadata: true,
+            showFungible: false,
+            showInscription: false,
+          },
+        },
+      }),
+    });
+    const { result } = await response.json();
+    nftData = result;
+  }
 
-  const treeId = result.compression.tree;
-  const imageUrl = result.content.links.image;
+  const treeId = nftData.compression.tree;
+  const imageUrl = nftData.content.links.image;
 
-  // Execute tree data and image text extraction in parallel
-  const [{ proofLengthImpossible }, { imageWords, imageContainsUrl }] =
-    await Promise.all([getTreeData(umi, treeId), getImageData(imageUrl)]);
+  // allow for tree data caching
+  let imageWords, imageContainsUrl;
+
+  if (!proofLength) {
+    [{ proofLength }, { imageWords, imageContainsUrl }] = await Promise.all([
+      getProofLength(treeId, rpcUrl),
+      getImageData(imageUrl),
+    ]);
+  } else {
+    let imageData = await getImageData(imageUrl);
+    imageWords = imageData.imageWords;
+    imageContainsUrl = imageData.imageContainsUrl;
+  }
 
   // Get the words from the NFT metadata
-  const attributeWords = (result.content.metadata.attributes ?? []).flatMap(
+  const attributeWords = (nftData.content.metadata.attributes ?? []).flatMap(
     (attr) => [...attr.value.split(/\s+/), ...attr.trait_type.split(/\s+/)]
   );
   const descriptionWords =
-    result.content.metadata.description?.split(/\s+/) ?? "";
-  const nameWords = result.content.metadata.name?.split(/\s+/) ?? "";
+    nftData.content.metadata.description?.split(/\s+/) ?? "";
+  const nameWords = nftData.content.metadata.name?.split(/\s+/) ?? "";
 
   // Check attribute/description/name for an emoji
   const allWords = [...attributeWords, ...descriptionWords, ...nameWords];
@@ -107,9 +124,7 @@ async function extractTokens(assetId, rpcUrl) {
 
   tokens.push(containsEmoji ? "containsEmoji" : "not_containsEmoji");
   tokens.push(
-    proofLengthImpossible
-      ? "proofLengthImpossible"
-      : "not_proofLengthImpossible"
+    proofLength > 23 ? "proofLengthImpossible" : "not_proofLengthImpossible"
   );
   tokens.push(imageContainsUrl ? "imageContainsUrl" : "not_imageContainsUrl");
 
@@ -134,4 +149,17 @@ function classify(tokens, model = defaultModel) {
   return spam_likelihood > ham_likelihood ? "spam" : "ham";
 }
 
-module.exports = { extractTokens, classify };
+async function extractAndClassify(address, rpcUrl) {
+  const tokens = await extractTokens(address, rpcUrl);
+  const classification = classify(tokens);
+
+  return { classification };
+}
+
+module.exports = {
+  extractTokens,
+  classify,
+  extractAndClassify,
+  getProofLength,
+  getImageData,
+};
