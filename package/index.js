@@ -27,19 +27,18 @@ async function getImageData(imageUrl) {
   });
   const ret = await worker.recognize(imageUrl);
   const imageWords = ret.data.text.split(/\s+/);
-  const imageContainsUrl = imageWords.some((word) =>
-    word.match(/^[\S]+[.][\S]/)
-  );
+
   worker.terminate();
 
-  return { imageWords, imageContainsUrl };
+  return { imageWords };
 }
 
 async function extractTokens(
   address,
   rpcUrl,
   nftData = undefined,
-  proofLength = undefined
+  proofLength = undefined,
+  imageWords = undefined
 ) {
   if (!address || !rpcUrl) {
     throw new Error("address and rpcUrl are required");
@@ -73,23 +72,31 @@ async function extractTokens(
   const treeId = nftData.compression.tree;
   const imageUrl = nftData.content.links.image;
 
-  // allow for tree data caching
-  let imageWords, imageContainsUrl;
-
-  if (!proofLength) {
-    [{ proofLength }, { imageWords, imageContainsUrl }] = await Promise.all([
+  // all of this to save a few hundred ms
+  // there must be a better way to do this
+  if (!proofLength && !imageWords) {
+    [{ proofLength }, { imageWords }] = await Promise.all([
       getProofLength(treeId, rpcUrl),
       getImageData(imageUrl),
     ]);
-  } else {
+  } else if (!imageWords) {
     let imageData = await getImageData(imageUrl);
     imageWords = imageData.imageWords;
-    imageContainsUrl = imageData.imageContainsUrl;
+  } else if (!proofLength) {
+    let proofData = await getProofLength(treeId, rpcUrl);
+    proofLength = proofData.proofLength;
   }
+
+  const imageContainsUrl = imageWords.some((word) =>
+    word.match(/^[\S]+[.][\S]/)
+  );
 
   // Get the words from the NFT metadata
   const attributeWords = (nftData.content.metadata.attributes ?? []).flatMap(
-    (attr) => [...attr.value.split(/\s+/), ...attr.trait_type.split(/\s+/)]
+    (attr) => [
+      ...String(attr.value).split(/\s+/),
+      ...String(attr.trait_type).split(/\s+/),
+    ]
   );
   const descriptionWords =
     nftData.content.metadata.description?.split(/\s+/) ?? "";

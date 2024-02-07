@@ -17,30 +17,33 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:${aws:region}:*:table/cnftTable"
-        - Effect: Allow
+          Resource: "arn:aws:dynamodb:*"
+        - Effect: "Allow"
           Action:
-            - dynamodb:Query
-            - dynamodb:Scan
-            - dynamodb:GetItem
-            - dynamodb:PutItem
-            - dynamodb:UpdateItem
-            - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:${aws:region}:*:table/treeTable"
+            - "lambda:InvokeFunction"
+            - "lambda:ListFunctions"
+          Resource: "*"
 
-
-	
 plugins:
   - serverless-api-gateway-throttling
-  - serverless-dynamodb-local
-  - serverless-offline
+  - serverless-python-requirements
+
 custom:
   apiGatewayThrottling:
-    maxRequestsPerSecond: 1
-    maxConcurrentRequests: 100
+    maxRequestsPerSecond: 100
+    maxConcurrentRequests: 1000
   dynamodb:
     stages:
       - dev
+  pythonRequirements:
+    dockerizePip: true
+    dockerFile: Dockerfile
+
+layers:
+  tesseractAl2:
+    path: ./compiled/amazonlinux-2
+    compatibleRuntimes:
+      - python3.8
 
 functions:
   classify:
@@ -50,6 +53,11 @@ functions:
       - httpApi:
           path: /classify
           method: get
+  tesseract-ocr:
+    handler: handler.main
+    runtime: python3.8
+    layers:
+      - { Ref: TesseractAl2LambdaLayer }
 
 resources:
   Resources:

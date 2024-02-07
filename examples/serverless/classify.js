@@ -6,10 +6,16 @@ const {
   GetCommand,
   DeleteCommand,
 } = require("@aws-sdk/lib-dynamodb");
+const {
+  LambdaClient,
+  ListFunctionsCommand,
+  InvokeCommand,
+} = require("@aws-sdk/client-lambda");
 const { extractTokens, classify, getProofLength } = require("cnft-spam-filter");
 require("dotenv").config();
 
 const client = new DynamoDBClient({});
+const lambdaClient = new LambdaClient({});
 
 const dynamo = DynamoDBDocumentClient.from(client);
 
@@ -56,33 +62,61 @@ module.exports.handler = async (event) => {
     const { result } = await response.json();
     nftData = result;
 
-    const treeId = nftData.compression.tree;
+    const treeId = nftData.compression?.tree;
     let proofLength = undefined;
-    treeQuery = await dynamo.send(
-      new GetCommand({
-        TableName: "treeTable",
-        Key: {
-          address: treeId,
-        },
-      })
-    );
-    if (treeQuery.Item) {
-      // if there's spam in the tree, it's a spam tree
-      if (treeQuery.Item.classification === "spam") {
-        return {
-          statusCode: 200,
-          body: JSON.stringify({
-            classification: treeQuery.Item.classification,
-          }),
-        };
+    if (treeId) {
+      treeQuery = await dynamo.send(
+        new GetCommand({
+          TableName: "treeTable",
+          Key: {
+            address: treeId,
+          },
+        })
+      );
+      if (treeQuery.Item) {
+        // if there's spam in the tree, it's a spam tree
+        if (treeQuery.Item.classification === "spam") {
+          return {
+            statusCode: 200,
+            body: JSON.stringify({
+              classification: treeQuery.Item.classification,
+            }),
+          };
+        }
+        proofLength = body.Item.proofLength;
+      } else {
+        let receivedProofLength = await getProofLength(treeId, rpcUrl);
+        proofLength = receivedProofLength.proofLength;
       }
-      proofLength = body.Item.proofLength;
     } else {
-      proofLength = await getProofLength(treeId, rpcUrl);
+      proofLength = 0; // idk technically a noncompressed nft is a tree of length 0 right? xd
+    }
+
+    const imageUrl = nftData.content.links.image;
+    let imageWords = undefined;
+    try {
+      const response = await lambdaClient.send(
+        new InvokeCommand({
+          FunctionName: "classify-serverless-dev-tesseract-ocr",
+          Payload: JSON.stringify({
+            image_url: imageUrl,
+          }),
+        })
+      );
+      const lambdaData = JSON.parse(Buffer.from(response.Payload).toString());
+      imageWords = JSON.parse(lambdaData.body);
+    } catch (e) {
+      console.log(e);
     }
 
     // do OCR on the tokens
-    const tokens = await extractTokens(address, rpcUrl, nftData, proofLength);
+    const tokens = await extractTokens(
+      address,
+      rpcUrl,
+      nftData,
+      proofLength,
+      imageWords
+    );
     const classification = classify(tokens);
 
     // if we haven't seen the address before, add it to the table

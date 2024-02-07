@@ -17,6 +17,7 @@
   "devDependencies": {
     "serverless-api-gateway-throttling": "^2.0.3",
     "serverless-dynamodb-local": "^0.2.40",
-    "serverless-offline": "^13.3.3"
+    "serverless-offline": "^13.3.3",
+    "serverless-python-requirements": "^6.0.1"
   }
 }

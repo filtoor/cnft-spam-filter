@@ -12,7 +12,10 @@ export default function ClassifyClient() {
     try {
       const tokens = await extractTokens(
         assetId,
-        process.env.NEXT_PUBLIC_RPC_URL
+        process.env.NEXT_PUBLIC_RPC_URL,
+        undefined,
+        undefined,
+        "[]"
       );
 
       const result = await classify(tokens);
