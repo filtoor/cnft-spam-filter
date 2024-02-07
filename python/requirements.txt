@@ -1,0 +1,4 @@
+opencv-python-headless<4.3
+runpod
+pytesseract
+Pillow
