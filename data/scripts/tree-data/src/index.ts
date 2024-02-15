@@ -52,8 +52,8 @@ async function getAssetProof(mint: string): Promise<assetProof> {
             const result = await response.json() as assetProof;
             return result;
         } else {
-            console.log(`Received ${response.status} response code. Sleeping for 10 seconds...`);
-            await sleep(10000);
+            console.log(`Received ${response.status} response code. Sleeping for 5 seconds...`);
+            await sleep(5000);
         }
     }
 }
@@ -92,7 +92,7 @@ async function writeObjectsToCsv(filePath: string, records: any[]) {
 async function main() {
     const treeData = new Map();
     const data = await getData();
-    let chunks = chunk(data, 10);
+    let chunks = chunk(data, 100);
     let assetResults: any = [];
     const newData: any = [];
 
@@ -106,10 +106,12 @@ async function main() {
         }
 
         assetResults = assetResults.concat(await Promise.all(assetPromises));
-        
-        counter += 10;
 
-        console.log(`Processed getAssetProof for ${counter} of ${data.length} records...${(counter / data.length) * 100}% complete`);
+        await sleep(2000);
+        
+        counter += 100;
+
+        console.log(`Processed getAssetProof for ${counter} of ${data.length} records...${((counter / data.length) * 100).toFixed(3)}% complete`);
 
         break;
     }
