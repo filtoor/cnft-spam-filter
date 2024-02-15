@@ -112,8 +112,6 @@ async function main() {
         counter += 100;
 
         console.log(`Processed getAssetProof for ${counter} of ${data.length} records...${((counter / data.length) * 100).toFixed(3)}% complete`);
-
-        break;
     }
 
     const neededTrees = new Set();
@@ -137,7 +135,6 @@ async function main() {
     }
 
     writeObjectsToCsv(process.env.OUTPUT_PATH as string, newData);
-
 }
 
 main();
