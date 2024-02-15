@@ -3,6 +3,7 @@ import { createObjectCsvWriter } from 'csv-writer';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { ConcurrentMerkleTreeAccount } from '@solana/spl-account-compression';
 const csv = require('csvtojson');
+const chunk = require('lodash.chunk');
 
 require('dotenv').config()
 
@@ -57,6 +58,18 @@ async function getAssetProof(mint: string): Promise<assetProof> {
     }
 }
 
+async function getCanopyDepth(treeID: PublicKey) {
+    const rpc = new Connection(`https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_KEY}`);
+
+    const accountInfo = await rpc.getAccountInfo(treeID);
+    const accountData = accountInfo?.data;
+
+    const parsedAccount = ConcurrentMerkleTreeAccount.fromBuffer(accountData as Buffer);
+    const canopyDepth = parsedAccount.getCanopyDepth();
+
+    return canopyDepth;
+}
+
 async function writeObjectsToCsv(filePath: string, records: any[]) {
     const csvWriter = createObjectCsvWriter({
         path: filePath,
@@ -77,35 +90,51 @@ async function writeObjectsToCsv(filePath: string, records: any[]) {
 }
 
 async function main() {
-
-    let newData = [];
-    const outputPath = process.env.OUTPUT_PATH;
+    const treeData = new Map();
     const data = await getData();
-    const rpc = new Connection(`https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_KEY}`);
+    let chunks = chunk(data, 10);
+    let assetResults: any = [];
+    const newData: any = [];
 
     let counter = 0;
 
-    for (const row of data) {
-        const assetData =  await getAssetProof(row.mint);
+    for (const c of chunks) {
+        const assetPromises: any = [];
 
-        const treeID = new PublicKey(assetData.result.tree_id);
-        const treeHeight = assetData.result.proof.length;
+        for (const row of c) {
+            assetPromises.push(getAssetProof(row.mint));
+        }
 
-        const accountInfo = await rpc.getAccountInfo(treeID);
-        const accountData = accountInfo?.data;
+        assetResults = assetResults.concat(await Promise.all(assetPromises));
+        
+        counter += 10;
 
-        const parsedAccount = ConcurrentMerkleTreeAccount.fromBuffer(accountData as Buffer);
-        const canopyDepth = parsedAccount.getCanopyDepth();
+        console.log(`Processed getAssetProof for ${counter} of ${data.length} records...${(counter / data.length) * 100}% complete`);
 
-        row.treeHeight = treeHeight;
-        row.canopyDepth = canopyDepth;
-
-        newData.push(row);
-
-        console.log(`Processed record ${counter} of ${data.length}...${((counter/data.length) * 100).toPrecision(2)}% complete`);
-        counter += 1;
+        break;
     }
-    writeObjectsToCsv(outputPath as string, newData);
+
+    const neededTrees = new Set();
+
+    for (const asset of assetResults) {
+        neededTrees.add(asset.result.tree_id);
+        asset.result.treeHeight = asset.result.proof.length;
+    }
+
+    for (const tree of [...neededTrees]) {
+        const account = new PublicKey(tree as string);
+        const data = await getCanopyDepth(account);
+        treeData.set(tree, data);
+    }
+
+    for (let i = 0; i < assetResults.length; i++) {
+        data[i].treeHeight = assetResults[i].result.treeHeight;
+        data[i].canopyDepth = treeData.get(assetResults[i].result.tree_id);
+
+        newData.push(data[i]);
+    }
+
+    writeObjectsToCsv(process.env.OUTPUT_PATH as string, newData);
 
 }
 

@@ -9,6 +9,7 @@
     "csv-writer": "^1.6.0",
     "csvtojson": "^2.0.10",
     "dotenv": "^16.4.4",
+    "lodash.chunk": "^4.2.0",
     "node-fetch": "^2.6.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
