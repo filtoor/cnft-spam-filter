@@ -31,23 +31,24 @@ function sleep(ms: number): Promise<void> {
 
 async function getAssetProof(mint: string): Promise<assetProof> {
     const url = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_KEY}`;
-
+    
     while (true) {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: 'my-id',
-                method: 'getAssetProof',
-                params: {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    id: 'my-id',
+                    method: 'getAssetProof',
+                    params: {
                     id: mint
                 }
             }),
         });
-
+        
         if (response.status === 200) {
             const result = await response.json() as assetProof;
             return result;
@@ -55,7 +56,13 @@ async function getAssetProof(mint: string): Promise<assetProof> {
             console.log(`Received ${response.status} response code. Sleeping for 5 seconds...`);
             await sleep(5000);
         }
-    }
+
+    } catch (error) {
+        console.log('Trying fetch again after error...', error);
+        await sleep(10000)
+        continue;
+    } 
+}
 }
 
 async function getCanopyDepth(treeID: PublicKey) {
@@ -92,7 +99,7 @@ async function writeObjectsToCsv(filePath: string, records: any[]) {
 async function main() {
     const treeData = new Map();
     const data = await getData();
-    let chunks = chunk(data, 100);
+    let chunks = chunk(data, 80);
     let assetResults: any = [];
     const newData: any = [];
 
@@ -107,9 +114,9 @@ async function main() {
 
         assetResults = assetResults.concat(await Promise.all(assetPromises));
 
-        await sleep(2000);
+        await sleep(2500);
         
-        counter += 100;
+        counter += 80;
 
         console.log(`Processed getAssetProof for ${counter} of ${data.length} records...${((counter / data.length) * 100).toFixed(3)}% complete`);
     }
